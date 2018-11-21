@@ -1,1 +1,4 @@
 # Rekrutacja
+
+## Ogólne zasady
+
