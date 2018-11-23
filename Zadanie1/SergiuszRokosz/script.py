@@ -121,7 +121,7 @@ class data_frame():
             typ = int
         except ValueError:
             try:
-                float([0])
+                float(line[0])
                 self._columns_index.append(column(self,float,**keywords))
                 typ = float
             except ValueError:
@@ -154,7 +154,7 @@ class data_frame():
             leng = len(self._rows_index)
         return vec[:leng]
     
-    def read_csv(self,path,separator=',',colfilin=True):#moze jeszcze z jakiegos formatu?
+    def read_csv(self,path,separator=',',colfilin=True):
         with open(path,'r') as f:
             if colfilin == True:
                 names = self._readline(f,separator)
@@ -175,8 +175,8 @@ class data_frame():
             return None
         else:
             return line
-                                 ##mógłbym wstawić żeby można było się odwołac 
-                                 #do kolumny po nazwie
+                                 
+        
     def del_row(self,no):
         self._rows_index.pop(no)
         for x in self._columns_index:
@@ -193,21 +193,98 @@ class data_frame():
         for x in self._columns_index:
             x.list[no1], x.list[no2] = x.list[no2], x.list[no1]
     
-    def sort(self,col_no,desc=True):#ascending/descending niezbyt duza szybkosc
+    def sort(self,col_no,desc=True):
         col = [x.value for x in self._columns_index[col_no].list]
-        order = [i[0] for i in sorted(enumerate(col), key=lambda x:x[1])]
-        for i in order:
-            self._rows_index = [self._columns_index[i] for i in order]
+        if data_frame._NullVal in col:
+            print('\n!!Null value in the column!!')
+            print("!!!!!!!!!Can't sort!!!!!!!!!")
+        else:
+            if desc == False:
+                col = col[::-1]
+            order = [i[0] for i in sorted(enumerate(col), key=lambda x:x[1])]
+            self._rows_index = [self._rows_index[i] for i in order]
             for j in self._columns_index:
                 j.list = [j.list[i] for i in order]
-            
+                
+                
+    def maximum(self,col_no):
+        if self._columns_index[col_no].type == str:
+            print("\n!!Not a numerical columns!!")
+            print("!!!!!!Can't calculate!!!!!!")
+        else:
+            col = [x.value for x in self._columns_index[col_no].list 
+                   if x.value != data_frame._NullVal]
+            return max(col)
         
-
+    def minimum(self,col_no):
+        if self._columns_index[col_no].type == str:
+            print("\n!!Not a numerical columns!!")
+            print("!!!!!!Can't calculate!!!!!!")
+        else:
+            col = [x.value for x in self._columns_index[col_no].list 
+                   if x.value != data_frame._NullVal]
+            return min(col)
+        
+    def average(self,col_no):
+        if self._columns_index[col_no].type == str:
+            print("\n!!Not a numerical columns!!")
+            print("!!!!!!Can't calculate!!!!!!")
+        else:
+            col = [x.value for x in self._columns_index[col_no].list 
+                   if x.value != data_frame._NullVal]
+            return sum(col)/len(col)
+        
+    def median(self,col_no):
+        if self._columns_index[col_no].type == str:
+            print("\n!!Not a numerical columns!!")
+            print("!!!!!!Can't calculate!!!!!!")
+        else:
+            col = [x.value for x in self._columns_index[col_no].list 
+                   if x.value != data_frame._NullVal]
+            if len(col)%2 == 0:
+                return sum(sorted(col)[len(col)//2-1:len(col)//2+1])/2
+            else:
+                return sorted(col)[len(col)//2]
+        
+        
+    def deviation(self,col_no):
+        from math import sqrt
+        if self._columns_index[col_no].type == str:
+            print("\n!!Not a numerical columns!!")
+            print("!!!!!!Can't calculate!!!!!!")
+        else:
+            col = [x.value for x in self._columns_index[col_no].list 
+                   if x.value != data_frame._NullVal]
+            av = self.average(col_no)
+            col = [(x-av)**2 for x in col]
+            return sqrt(sum(col)/(len(col)-1))
+        
+    def change_value(self,val,row_no,col_no):
+        self._rows_index[row_no].list[col_no].value = val
+        
+        
+    def fill_na(self,col_no,approach):
+        dicti = {'deviation':self.deviation,
+                 'median':self.median,
+                 'average':self.average,
+                 'minimum':self.minimum,
+                 'maximum':self.maximum,
+                 }
+        try:
+            val = dicti[approach](col_no)
+        except KeyError:
+            print("\n!!can't recognize approach!!")
+        else:
+            for x in self._columns_index[col_no].list:
+                if x.value == data_frame._NullVal:
+                    x.value = val
+                
+                
 df = data_frame()
 df.read_csv('próbny.csv')
-df.add_column([6.1,2,2],name='0')
-df.add_column([6.1,2,2],name='0')
-df.add_row([6.1,2,2,5,2])
+df.add_column([6.1,2,'c'],name='0')
+df.add_column(['y','g','d'],name='0')
+df.add_row([1,2,2,5,'a'])
 df.show()
-df.sort(0)
+df.fill_na(1,'median')
 df.show()
