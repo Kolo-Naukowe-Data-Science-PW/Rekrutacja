@@ -145,7 +145,7 @@ class data_frame():
         print([x.name for x in self._columns_index[cslice]])
         print('rows')
         for x in self._rows_index[rslice]:
-            print(self._rows_index.index(x),[y.value for y in x.list])
+            print(self._rows_index.index(x),[y.value for y in x.list[cslice]])
             
     def _przycinacz(self,vec,row=True):
         if row == True:
@@ -170,7 +170,8 @@ class data_frame():
     
     
     def _readline(self,file,separator):
-        line = file.readline().rstrip('\n').split(separator)
+        line = [x for x in file.readline().rstrip('\n').split(separator) 
+                if x != '']
         if line == ['']:
             return None
         else:
@@ -278,13 +279,3 @@ class data_frame():
             for x in self._columns_index[col_no].list:
                 if x.value == data_frame._NullVal:
                     x.value = val
-                
-                
-df = data_frame()
-df.read_csv('próbny.csv')
-df.add_column([6.1,2,'c'],name='0')
-df.add_column(['y','g','d'],name='0')
-df.add_row([1,2,2,5,'a'])
-df.show()
-df.fill_na(1,'median')
-df.show()
